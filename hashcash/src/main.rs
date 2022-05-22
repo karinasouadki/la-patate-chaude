@@ -17,7 +17,6 @@ struct MD5HashCashOutput {
 
 
 fn main() {
-    
     pub struct Digest(pub [u8; 16]);
 
     // Create a new input
@@ -32,6 +31,7 @@ fn main() {
 
 
     println!("{:?}", digest[0]);
+
 }
 
 // fn hashcash(input: MD5HashCashInput) -> MD5HashCashOutput {

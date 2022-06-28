@@ -28,27 +28,39 @@ fn main() {
     // output = hashcash(input);
 
     let mut digest: [u8; 16] = *md5::compute("000000000000034Chello");
-    println!("{:?}", digest);
-    let mut msg: String = "0".to_string();
-
-
-
-
+    // println!("{:?}", digest);
+    let mut msg: String = String::new();
 
     for i in 0..16 {
-        msg = format!("{}{:x}", msg, digest[i]);
+        msg = format!("{}{}", msg, convertHexaToBinary(digest[i]));
     }
 
-    count_first_zero_of_a_hexa(&msg);
+    count_first_zero_of_a_binary(&msg);
 
-    println!("{:?}", msg.as_bytes());
+
+
+    // for i in 0..16 {
+    //     msg = format!("{}{:x}", msg, digest[i]);
+    // }
+
+
+    // println!("{:?}", msg.as_bytes());
 
 }
 
-fn count_first_zero_of_a_hexa(hashcode: &String){
-    let current_char: char = hashcode.chars().next().unwrap();
-    let mut found_zero: bool = false;
-    let sum_zero: u32;
+fn count_first_zero_of_a_binary(hashcode: &String) -> u8{
+    let mut sumOfZero: u8 = 0;
+    for i in 0..hashcode.len(){
+        if hashcode.chars().nth(i).unwrap() != '0'{
+            break;
+        }
+        sumOfZero += 1;
+    }
+    sumOfZero
+    
+}
 
-    println!("{:?}", (current_char.to_string()).parse::<i32>().unwrap());
+fn convertHexaToBinary(hexa: u8) -> String {
+    let x = format!("{:0>8}", format!("{:b}", hexa));
+    x
 }

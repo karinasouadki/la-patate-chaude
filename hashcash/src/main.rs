@@ -1,5 +1,5 @@
 use md5;
-use std::str;
+
 
 struct MD5HashCashInput {
     // complexity in bits
@@ -17,7 +17,7 @@ struct MD5HashCashOutput {
 
 
 fn main() {
-    pub struct Digest(pub [u8; 16]);
+
 
     // Create a new input
     let input = MD5HashCashInput {
@@ -27,23 +27,24 @@ fn main() {
 
     // output = hashcash(input);
 
-    let digest: [u8; 16] = *md5::compute("000000000000034Chello");
+    let mut digest: [u8; 16] = *md5::compute("000000000000034Chello");
+    println!("{:?}", digest);
+    let mut msg: String = "0".to_string();
 
+    for i in 0..16 {
+        msg = format!("{}{:x}", msg, digest[i]);
+    }
 
-    println!("{:?}", digest[0]);
+    count_first_zero_of_a_hexa(&msg);
+
+    println!("{:?}", msg.as_bytes());
 
 }
 
-// fn hashcash(input: MD5HashCashInput) -> MD5HashCashOutput {
-//     let seed = String::from("000000000000034C");
-//     let digest = md5::compute(b"000000000000034Chello");
+fn count_first_zero_of_a_hexa(hashcode: &String){
+    let current_char: char = hashcode.chars().next().unwrap();
+    let mut found_zero: bool = false;
+    let sum_zero: u32;
 
-//     let output = MD5HashCashOutput {
-//         seed: seed,
-//         hashcode: digest,
-//     };
-
-//     println!("{:?}", digest);
-
-//     output
-// }
+    println!("{:?}", (current_char.to_string()).parse::<i32>().unwrap());
+}

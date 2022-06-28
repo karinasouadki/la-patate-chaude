@@ -31,6 +31,10 @@ fn main() {
     println!("{:?}", digest);
     let mut msg: String = "0".to_string();
 
+
+
+
+
     for i in 0..16 {
         msg = format!("{}{:x}", msg, digest[i]);
     }

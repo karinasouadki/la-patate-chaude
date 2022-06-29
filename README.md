@@ -1,5 +1,11 @@
 # Projet Rust: *la Patate Chaude* <br> Architecture des Logiciels - 4<sup>ème</sup> année - ESGI
 
+---
+
+**Flash news**: la [FAQ](FAQ.md)
+
+---
+
 Vous connaissez peut-être [l'expression](https://fr.wiktionary.org/wiki/patate_chaude)
 ou [le jeu](https://www.momes.net/jeux/jeux-exterieur/courses-relais-rapidite/patate-chaude-842114) de la *patate
 chaude*.
@@ -82,16 +88,18 @@ Tout challenge doit respecter l'interface imposée par le `trait` suivant:
 
 ```rust
 trait Challenge {
-    // Données en entrée du challenge
+    /// Données en entrée du challenge
     type Input;
-    // Données en sortie du challenge
+    /// Données en sortie du challenge
     type Output;
-    // Nom du challenge
+    /// Nom du challenge
     fn name() -> String;
-    // Résout le challenge
+    /// Create a challenge from the specific input
+    fn new(input: Self::Input) -> Self;
+    /// Résout le challenge
     fn solve(&self) -> Self::Output;
-    // Vérifie qu'une sortie est valide pour le challenge
-    fn verify(&self, answer: Self::Output) -> bool;
+    /// Vérifie qu'une sortie est valide pour le challenge
+    fn verify(&self, answer: &Self::Output) -> bool;
 }
 ```
 
@@ -99,13 +107,13 @@ Différents challenges pourront être requis pour le jeu.
 
 Le premier challenge est le *HashCash*; au moins un autre challenge sera à définir collectivement.
 
-1. [HashCash : le challenge de preuve de travail](md5-hashcash.md)
+1. [`HashCash` : le challenge de preuve de travail](md5-hashcash.md)
 
-1. Recover a secret string for random n-tuples (à qualifier plus tard)
+1. [`MonstrousMaze` : le challenge d'évasion](monstrous-maze.md)
+
+1. [`RecoverSecret` : le challenge de décodage](recover_secret.md)
 
 1. Nonogram solver (à qualifier plus tard)
-
-1. Path finder with monsters (à qualifier plus tard)
 
 1. Bloxorz Solver (à qualifier plus tard)
 
@@ -196,29 +204,36 @@ Tous les messages sont de la forme:
 
 ### Les messages possibles:
 
-| Nom du message      | Champs du message                                             | Exemple                                                                                                                                                                                                                                                                                                        |
-|---------------------|---------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Hello`             |                                                               | `"Hello"`                                                                                                                                                                                                                                                                                                      |
-| `Welcome`           | `version: u8`                                                 | `{"Welcome":{"version":1}}`                                                                                                                                                                                                                                                                                    | 
-| `Subscribe`         | `name: String`                                                | `{"Subscribe":{"name":"free_patato"}}`                                                                                                                                                                                                                                                                         | 
-| `SubscribeResult`   | `enum { Ok, Err(SubscribeError) }`                            | `{"SubscribeResult":{"Err":"InvalidName"}}`                                                                                                                                                                                                                                                                    | 
-| `PublicLeaderBoard` | `Vec<PublicPlayer>`                                           | `{"PublicLeaderBoard":[{"name":"free_patato","stream_id":"127.0.0.1","score":10,"steps":20,"is_active":true,"total_used_time":1.234},{"name":"dark_salad","stream_id":"127.0.0.1","score":6,"steps":200,"is_active":true,"total_used_time":0.1234}]}`                                                          | 
-| `Challenge`         | `enum { ChallengeName(ChallengeInput) }`                      | `{"Challenge":{"MD5HashCash":{"complexity":5,"message":"Hello"}}}`                                                                                                                                                                                                                                             | 
-| `ChallengeResult`   | `result: ChallengeAnswer`<br/>`next_target: String`           | `{"ChallengeResult":{"answer":{"MD5HashCash":{"seed":12345678,"hashcode":"68B329DA9893E34099C7D8AD5CB9C940"}},"next_target":"dark_salad"}}`                                                                                                                                                                    | 
-| `RoundSummary`      | `challenge: String`<br/>`chain: Vec<ReportedChallengeResult>` | `{"RoundSummary":{"challenge":"MD5HashCash","chain":[{"name":"free_patato","value":{"Ok":{"used_time":0.1,"next_target":"dark_salad"}}},{"name":"dark_salad","value":"Unreachable"}]}}`                                                                                                                        | 
-| `EndOfGame`         | `leader_board: PublicLeaderBoard`                             | `{"EndOfGame":{"leader_board":[{"name":"free_patato","stream_id":"127.0.0.1","score":10,"steps":20,"is_active":true,"total_used_time":1.234},{"name":"dark_salad","stream_id":"127.0.0.1","score":6,"steps":200,"is_active":true,"total_used_time":0.1234}]}}`                                                 | 
+| Nom du message      | Champs du message                                             | Exemple                                                                                                                                                                                                                                                        |
+|---------------------|---------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Hello`             |                                                               | `"Hello"`                                                                                                                                                                                                                                                      |
+| `Welcome`           | `version: u8`                                                 | `{"Welcome":{"version":1}}`                                                                                                                                                                                                                                    | 
+| `Subscribe`         | `name: String`                                                | `{"Subscribe":{"name":"free_patato"}}`                                                                                                                                                                                                                         | 
+| `SubscribeResult`   | `enum { Ok, Err(SubscribeError) }`                            | `{"SubscribeResult":{"Err":"InvalidName"}}`                                                                                                                                                                                                                    | 
+| `PublicLeaderBoard` | `Vec<PublicPlayer>`                                           | `{"PublicLeaderBoard":[{"name":"free_patato","stream_id":"127.0.0.1","score":10,"steps":20,"is_active":true,"total_used_time":1.234},{"name":"dark_salad","stream_id":"127.0.0.1","score":6,"steps":200,"is_active":true,"total_used_time":0.1234}]}`          | 
+| `Challenge`         | `enum { ChallengeName(ChallengeInput) }`                      | `{"Challenge":{"MD5HashCash":{"complexity":5,"message":"Hello"}}}`                                                                                                                                                                                             | 
+| `ChallengeResult`   | `answer: ChallengeAnswer`<br/>`next_target: String`                | `{"ChallengeResult":{"answer":{"MD5HashCash":{"seed":12345678,"hashcode":"68B329DA9893E34099C7D8AD5CB9C940"}},"next_target":"dark_salad"}}`                                                                                                                    | 
+| `RoundSummary`      | `challenge: String`<br/>`chain: Vec<ReportedChallengeResult>` | `{"RoundSummary":{"challenge":"MD5HashCash","chain":[{"name":"free_patato","value":{"Ok":{"used_time":0.1,"next_target":"dark_salad"}}},{"name":"dark_salad","value":"Unreachable"}]}}`                                                                        | 
+| `EndOfGame`         | `leader_board: PublicLeaderBoard`                             | `{"EndOfGame":{"leader_board":[{"name":"free_patato","stream_id":"127.0.0.1","score":10,"steps":20,"is_active":true,"total_used_time":1.234},{"name":"dark_salad","stream_id":"127.0.0.1","score":6,"steps":200,"is_active":true,"total_used_time":0.1234}]}}` | 
+
+### Séquencement des messages
+
+![Séquencement des messages](images/Sequence.drawio.svg "Séquencement des messages")
+
+
+
 
 ### Les types additionnels:
 
-| Nom du type               | Description du type                                                                                                                                                                                           |
-|---------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `SubscribeError`          | `enum { AlreadyRegistered, InvalidName }`                                                                                                                                                                     |
-| `PublicPlayer`            | `name: String`<br/>`stream_id: String `<br/>`score: i32 `<br/>`steps: u32 `<br/>`is_active: bool`<br/>`total_used_time: f64 `                                                                                 |
-| `ChallengeAnswer`         | `enum { ChallengeName(ChallengeOutput) }`                                                                                                                                                                     |
-| `ChallengeResult`         | `name:  ChallengeAnswer`<br/>`next_target: String`                                                                                                                                                            |
+| Nom du type               | Description du type                                                                                                                                                   |
+|---------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `SubscribeError`          | `enum { AlreadyRegistered, InvalidName }`                                                                                                                             |
+| `PublicPlayer`            | `name: String`<br/>`stream_id: String `<br/>`score: i32 `<br/>`steps: u32 `<br/>`is_active: bool`<br/>`total_used_time: f64 `                                         |
+| `ChallengeAnswer`         | `enum { ChallengeName(ChallengeOutput) }`                                                                                                                             |
+| `ChallengeResult`         | `name:  ChallengeAnswer`<br/>`next_target: String`                                                                                                                    |
 | `ChallengeValue`          | `enum {`<br/>`  Unreachable,`<br/>`  Timeout,`<br/>`  BadResult { used_time: f64, next_target: String },`<br/>`  Ok { used_time: f64, next_target: String }`<br/>` }` |
-| `ReportedChallengeResult` | `name: String,`<br/>`value: JobValue`                                                                                                                                                                         |
-| `PublicLeaderBoard`       | `.0: Vec<PublicPlayer>`                                                                                                                                                                                       |
+| `ReportedChallengeResult` | `name: String,`<br/>`value: ChallengeValue`                                                                                                                                   |
+| `PublicLeaderBoard`       | `.0: Vec<PublicPlayer>`                                                                                                                                               |
 
 ### Quelques exemples de captures d'écran de la version de référence.
 

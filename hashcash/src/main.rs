@@ -1,5 +1,5 @@
 use md5;
-
+use rand::prelude::*;
 
 struct MD5HashCashInput {
     // complexity in bits
@@ -25,42 +25,25 @@ fn main() {
         message: String::from("hello"),
     };
 
-    // output = hashcash(input);
+    let output = hashcash(input);
 
-    let mut digest: [u8; 16] = *md5::compute("000000000000034Chello");
-    // println!("{:?}", digest);
-    let mut msg: String = String::new();
-
-    for i in 0..16 {
-        msg = format!("{}{}", msg, convertHexaToBinary(digest[i]));
-    }
-
-    count_first_zero_of_a_binary(&msg);
-
-
-
-    // for i in 0..16 {
-    //     msg = format!("{}{:x}", msg, digest[i]);
-    // }
-
-
-    // println!("{:?}", msg.as_bytes());
-
+    println!("{}\n{}", output.seed, output.hashcode);
 }
 
-fn count_first_zero_of_a_binary(hashcode: &String) -> u8{
-    let mut sumOfZero: u8 = 0;
-    for i in 0..hashcode.len(){
-        if hashcode.chars().nth(i).unwrap() != '0'{
-            break;
+fn hashcash(input: MD5HashCashInput) -> MD5HashCashOutput {
+
+    loop
+    {
+        let mut seed: u64 = random();
+        let mut seed_with_message = format!("{}{}", seed.to_string(), input.message);
+        let mut hashcode128 = u128::from_be_bytes(md5::compute(seed_with_message).0);
+        let current_complexity = hashcode128.leading_zeros();
+        let hashcode = format!("{:x}", hashcode128);
+        if current_complexity >= input.complexity{
+            return MD5HashCashOutput {
+                seed,
+                hashcode
+            }
         }
-        sumOfZero += 1;
     }
-    sumOfZero
-    
-}
-
-fn convertHexaToBinary(hexa: u8) -> String {
-    let x = format!("{:0>8}", format!("{:b}", hexa));
-    x
 }

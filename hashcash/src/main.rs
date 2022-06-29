@@ -1,5 +1,5 @@
 use md5;
-use std::str;
+use rand::prelude::*;
 
 struct MD5HashCashInput {
     // complexity in bits
@@ -17,7 +17,7 @@ struct MD5HashCashOutput {
 
 
 fn main() {
-    pub struct Digest(pub [u8; 16]);
+
 
     // Create a new input
     let input = MD5HashCashInput {
@@ -25,25 +25,25 @@ fn main() {
         message: String::from("hello"),
     };
 
-    // output = hashcash(input);
+    let output = hashcash(input);
 
-    let digest: [u8; 16] = *md5::compute("000000000000034Chello");
-
-
-    println!("{:?}", digest[0]);
-
+    println!("{}\n{}", output.seed, output.hashcode);
 }
 
-// fn hashcash(input: MD5HashCashInput) -> MD5HashCashOutput {
-//     let seed = String::from("000000000000034C");
-//     let digest = md5::compute(b"000000000000034Chello");
+fn hashcash(input: MD5HashCashInput) -> MD5HashCashOutput {
 
-//     let output = MD5HashCashOutput {
-//         seed: seed,
-//         hashcode: digest,
-//     };
-
-//     println!("{:?}", digest);
-
-//     output
-// }
+    loop
+    {
+        let mut seed: u64 = random();
+        let mut seed_with_message = format!("{}{}", seed.to_string(), input.message);
+        let mut hashcode128 = u128::from_be_bytes(md5::compute(seed_with_message).0);
+        let current_complexity = hashcode128.leading_zeros();
+        let hashcode = format!("{:x}", hashcode128);
+        if current_complexity >= input.complexity{
+            return MD5HashCashOutput {
+                seed,
+                hashcode
+            }
+        }
+    }
+}

@@ -20,7 +20,7 @@ fn handle_sender(mut stream: TcpStream) -> io::Result<()> {
 
 fn main() -> io::Result<()> {
     let receiver_listener =
-        TcpListener::bind("127.0.0.1:7878").expect("Failed and bind with the sender");
+        TcpListener::bind("127.0.0.1:7870").expect("Failed and bind with the sender");
     let mut thread_vec: Vec<thread::JoinHandle<()>> = Vec::new();
     for stream in receiver_listener.incoming() {
         let stream = stream.expect("failed");

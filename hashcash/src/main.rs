@@ -34,11 +34,11 @@ fn hashcash(input: MD5HashCashInput) -> MD5HashCashOutput {
 
     loop
     {
-        let mut seed: u64 = random();
-        let mut seed_with_message = format!("{}{}", seed.to_string(), input.message);
-        let mut hashcode128 = computeMd5ToU128(seed_with_message);
-        let current_complexity = computeComplexity(hashcode128);
-        let hashcode = format!("{:x}", hashcode128);
+        let seed: u64 = random();
+        let seed_with_message = format!("{}{}", seed.to_string(), input.message);
+        let mut hashcode128 = compute_md5_to_u128(seed_with_message);
+        let current_complexity = compute_complexity(hashcode128);
+        let hashcode = format!("{:x}", hashcode128).to_string().to_uppercase();
         if current_complexity >= input.complexity{
             return MD5HashCashOutput {
                 seed,
@@ -48,10 +48,11 @@ fn hashcash(input: MD5HashCashInput) -> MD5HashCashOutput {
     }
 }
 
-fn computeComplexity(hashcode: u128) -> u32 {
+fn compute_complexity(hashcode: u128) -> u32 {
     hashcode.leading_zeros()
 }
 
-fn computeMd5ToU128(message: String) -> u128 {
+fn compute_md5_to_u128(message: String) -> u128 {
     u128::from_be_bytes(md5::compute(message).0)
 }
+
